@@ -1,4 +1,4 @@
-Prompt
+Prompt AI Code
 <pre>
 Act as an expert Frontend Developer. Build a complete, fully functional, and visually stunning "Math Snakes and Ladders" web application inside a single `index.html` file using HTML5, CSS3, JavaScript (ES6+), Bootstrap 5.3, Font Awesome 6, and SweetAlert2. 
 
