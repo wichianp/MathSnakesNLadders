@@ -1,4 +1,507 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Snakes & Ladders - 100 Squares</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --p1-color: #ff4757;
+            --p2-color: #2e86de;
+            --p3-color: #2ed573;
+            --p4-color: #ffa502;
+            --p5-color: #9b59b6;
+            --board-bg: #2f3542;
+        }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #f1f2f6;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        #setup-screen {
+            max-width: 500px;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+        .board-container {
+            position: relative;
+            background: var(--board-bg);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 750px;
+        }
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 3px;
+            z-index: 2;
+            position: relative;
+        }
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            color: #2f3542;
+        }
+        .cell1 { 
+            aspect-ratio: 1;
+            background: rgb(250, 250, 250); 
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            color: #2f3542;
+        }
+        .cell2 {
+            aspect-ratio: 1;
+            background: rgb(187, 237, 250); 
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            color: #2f3542;
+        }
+        /*.cell:nth-child(even) { background: rgba(236, 240, 241, 0.85); }*/
+        
+        @media (max-width: 576px) {
+            .cell { font-size: 0.7rem; }
+        }
+
+        #board-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .token {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            position: absolute;
+            z-index: 10;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            display: none;
+        }
+        .token-p1 { background: var(--p1-color); }
+        .token-p2 { background: var(--p2-color); }
+        .token-p3 { background: var(--p3-color); }
+        .token-p4 { background: var(--p4-color); }
+        .token-p5 { background: var(--p5-color); }
+
+        .status-box {
+            border-left: 5px solid #ccc;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+        .status-box.active {
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
+        }
+        .status-p1.active { border-left-color: var(--p1-color); background: #fff5f5; }
+        .status-p2.active { border-left-color: var(--p2-color); background: #f0f7ff; }
+        .status-p3.active { border-left-color: var(--p3-color); background: #f2fff6; }
+        .status-p4.active { border-left-color: var(--p4-color); background: #fffdf0; }
+        .status-p5.active { border-left-color: var(--p5-color); background: #faf4fc; }
+
+        .dice-box {
+            font-size: 4.5rem;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2f3542;
+        }
+        .btn-roll {
+            font-size: 1.3rem;
+            border-radius: 50px;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0); }
+            100% { transform: rotate(360deg); }
+        }
+        .dice-rolling { animation: roll 0.2s infinite linear; }
+
+        /* แถบเวลานับถอยหลังสีแดง */
+        .swal-timer-bar {
+            height: 6px;
+            background-color: #ff4757;
+            width: 100%;
+            border-radius: 3px;
+            margin-top: 15px;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div id="setup-screen" class="text-center">
+        <h3 class="fw-bold text-primary mb-4"><i class="fa-solid fa-users me-2"></i> ตั้งค่าผู้เล่น</h3>
+        <p class="text-muted">โปรดเลือกจำนวนผู้เล่นที่ต้องการ (1 - 5 คน)</p>
+        <div class="mb-4">
+            <select id="player-count-select" class="form-select form-select-lg text-center fw-bold">
+                <option value="1">1 คน (เล่นคนเดียวฝึกฝน)</option>
+                <option value="2" selected>2 คน</option>
+                <option value="3">3 คน</option>
+                <option value="4">4 คน</option>
+                <option value="5">5 คน</option>
+            </select>
+        </div>
+        <button class="btn btn-primary btn-lg w-100 fw-bold py-3 shadow" onclick="startGame()">เข้าสู่เกม <i class="fa-solid fa-play ms-1"></i></button>
+    </div>
+
+    <div id="game-screen" class="game-card d-none">
+        <div class="bg-primary text-white p-3 text-center d-flex justify-content-between align-items-center px-4">
+            <h3 class="mb-0 fw-bold"><i class="fa-solid fa-calculator me-2"></i> บันไดงูคณิตศาสตร์ (100 ช่อง)</h3>
+            <button class="btn btn-outline-light btn-sm" onclick="location.reload()"><i class="fa-solid fa-rotate-left"></i> เริ่มใหม่</button>
+        </div>
+
+        <div class="row p-4">
+            <div class="col-xl-8 col-lg-7 mb-4">
+                <div class="board-container" id="game-board-container">
+                    <svg id="board-svg"></svg>
+                    <div class="board-grid" id="board-grid"></div>
+                    
+                    <div id="token-1" class="token token-p1"></div>
+                    <div id="token-2" class="token token-p2"></div>
+                    <div id="token-3" class="token token-p3"></div>
+                    <div id="token-4" class="token token-p4"></div>
+                    <div id="token-5" class="token token-p5"></div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-5">
+                <div class="card border-0 bg-light rounded-4 p-3 text-center mb-4 shadow-sm">
+                    <div id="turn-display" class="fw-bold text-primary fs-5 mb-2">ตาของผู้เล่นที่ 1</div>
+                    <div class="dice-box" id="dice-view">
+                        <i class="fa-solid fa-dice-six"></i>
+                    </div>
+                    <button class="btn btn-primary w-100 btn-roll fw-bold py-3 shadow mt-2" id="roll-btn" onclick="handleTurn()">
+                        <i class="fa-solid fa-cube me-1"></i> ทอยลูกเต๋า
+                    </button>
+                </div>
+
+                <h5 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-id-card"></i> สถานะผู้เล่น</h5>
+                <div class="row g-2" id="status-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BOARD_MAX = 100;
+    const COLS = 10;
+    const ROWS = 10;
+    const ANSWER_TIME_LIMIT = 10; // กำหนดเวลา 10 วินาที
+
+    let totalPlayers = 2;
+    let currentPlayer = 1;
+    let positions = {};
+    let isMoving = false;
+
+    const playerColors = ['#ff4757', '#2e86de', '#2ed573', '#ffa502', '#9b59b6'];
+    const ladders = { 3: 37, 6: 16, 14: 32, 27: 56, 41: 61, 52: 73, 57: 77, 70: 89, 78: 98 };
+    const snakes = { 15: 5, 42: 21, 49: 12, 67: 50, 75: 46, 88: 36, 94: 74, 97: 65, 99: 24 };
+
+    function startGame() {
+        totalPlayers = parseInt(document.getElementById('player-count-select').value);
+        document.getElementById('setup-screen').classList.add('d-none');
+        document.getElementById('game-screen').classList.remove('d-none');
+
+        for (let i = 1; i <= totalPlayers; i++) {
+            positions[i] = 1;
+            document.getElementById(`token-${i}`).style.display = 'block';
+        }
+
+        buildStatusUI();
+        createBoard();
+    }
+
+    function buildStatusUI() {
+        const container = document.getElementById('status-container');
+        container.innerHTML = '';
+        for (let i = 1; i <= totalPlayers; i++) {
+            const isActive = (i === 1) ? 'active' : '';
+            container.innerHTML += `
+                <div class="col-12">
+                    <div id="status-card-${i}" class="status-box status-p${i} p-3 shadow-sm rounded bg-white ${isActive}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color: ${playerColors[i-1]}"><i class="fa-solid fa-user"></i> ผู้เล่นที่ ${i}</span>
+                            <span class="badge bg-secondary fs-6">ช่อง: <span id="pos-text-${i}">1</span></span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        updateTurnDisplay();
+    }
+
+    function createBoard() {
+        const grid = document.getElementById('board-grid');
+        grid.innerHTML = '';
+        
+        for (let r = ROWS - 1; r >= 0; r--) {
+            let rowNodes = [];
+            for (let c = 0; c < COLS; c++) {
+                let num = (r % 2 === 0) ? (r * COLS + c + 1) : (r * COLS + (COLS - c));
+                const cell = document.createElement('div');
+                
+                if(num%2 === 0){
+                    cell.className = 'cell1';
+                }else{
+                    cell.className = 'cell2';
+                }
+               
+                cell.id = `cell-${num}`;
+                if(num === 1){cell.innerHTML = `<span class="fs-1">🚩</span>`;}else
+                if(num===100){cell.innerHTML = `<span class="fs-1">🏆</span>`;}else
+                {cell.innerHTML = `<span>${num}</span>`;}
+                rowNodes.push(cell);
+            }
+            rowNodes.forEach(node => grid.appendChild(node));
+        }
+        setTimeout(drawLines, 500);
+        updateTokens();
+    }
+
+    function drawLines() {
+        const svg = document.getElementById('board-svg');
+        svg.innerHTML = '';
+        
+        const draw = (obj, color, isSnake) => {
+            for (let [start, end] of Object.entries(obj)) {
+                const sEl = document.getElementById(`cell-${start}`);
+                const eEl = document.getElementById(`cell-${end}`);
+                const rect = document.getElementById('board-grid').getBoundingClientRect();
+                
+                if (!sEl || !eEl) continue;
+                const sRect = sEl.getBoundingClientRect();
+                const eRect = eEl.getBoundingClientRect();
+
+                const x1 = sRect.left - rect.left + sRect.width / 2;
+                const y1 = sRect.top - rect.top + sRect.height / 2;
+                const x2 = eRect.left - rect.left + eRect.width / 2;
+                const y2 = eRect.top - rect.top + eRect.height / 2;
+
+                if(isSnake) {
+                    const midX = (x1 + x2) / 2 + (parseInt(start) % 2 === 0 ? 25 : -25);
+                    const midY = (y1 + y2) / 2 - 15;
+                    svg.innerHTML += `<path d="M${x1},${y1} Q${midX},${midY} ${x2},${y2}" stroke="${color}" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.65" />`;
+                } else {
+                    svg.innerHTML += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="15" stroke-dasharray="1,15" stroke-linecap="round" opacity="0.65" />`;
+                }
+            }
+        };
+        draw(ladders, '#2ed573', false);
+        draw(snakes, '#ff4757', true);
+    }
+
+    function updateTokens() {
+        for (let i = 1; i <= totalPlayers; i++) {
+            const currentCellPos = positions[i];
+            const cell = document.getElementById(`cell-${currentCellPos}`);
+            const token = document.getElementById(`token-${i}`);
+            if(!cell || !token) continue;
+            
+            const rect = cell.getBoundingClientRect();
+            const boardRect = document.getElementById('game-board-container').getBoundingClientRect();
+
+            let offsetX = 0, offsetY = 0;
+            const radius = 8; 
+
+            if (totalPlayers > 1) {
+                const angle = ((i - 1) * (360 / totalPlayers)) * (Math.PI / 180);
+                offsetX = Math.cos(angle) * radius;
+                offsetY = Math.sin(angle) * radius;
+            }
+
+            token.style.left = (rect.left - boardRect.left + rect.width / 2 + offsetX - 9) + 'px';
+            token.style.top = (rect.top - boardRect.top + rect.height / 2 + offsetY - 9) + 'px';
+            
+            const txt = document.getElementById(`pos-text-${i}`);
+            if(txt) txt.innerText = currentCellPos;
+        }
+    }
+
+    function updateTurnDisplay() {
+        const display = document.getElementById('turn-display');
+        display.innerText = `ตาของผู้เล่นที่ ${currentPlayer}`;
+        display.style.color = playerColors[currentPlayer - 1];
+
+        for (let i = 1; i <= totalPlayers; i++) {
+            const card = document.getElementById(`status-card-${i}`);
+            if(card) {
+                if (i === currentPlayer) card.classList.add('active');
+                else card.classList.remove('active');
+            }
+        }
+    }
+
+    async function handleTurn() {
+        if(isMoving) return;
+        isMoving = true;
+
+        const rollBtn = document.getElementById('roll-btn');
+        const diceView = document.getElementById('dice-view');
+        rollBtn.disabled = true;
+
+        diceView.classList.add('dice-rolling');
+        await new Promise(r => setTimeout(r, 600));
+        const roll = Math.floor(Math.random() * 6) + 1;
+        diceView.classList.remove('dice-rolling');
+        
+        const diceIcons = ['', 'one', 'two', 'three', 'four', 'five', 'six'];
+        diceView.innerHTML = `<i class="fa-solid fa-dice-${diceIcons[roll]}"></i>`;
+
+        let targetPos = positions[currentPlayer] + roll;
+
+        if(targetPos >= BOARD_MAX) {
+            positions[currentPlayer] = BOARD_MAX;
+            updateTokens();
+            Swal.fire({ 
+                title: `🎉 ผู้เล่นที่ ${currentPlayer} ชนะเกม! 🏆`, 
+                icon: 'success',
+                confirmButtonText: 'เล่นใหม่อีกครั้ง'
+            }).then(() => location.reload());
+            return;
+        }
+
+        positions[currentPlayer] = targetPos;
+        updateTokens();
+
+        setTimeout(async () => {
+            await checkSpecial();
+            currentPlayer = (currentPlayer % totalPlayers) + 1;
+            updateTurnDisplay();
+            isMoving = false;
+            rollBtn.disabled = false;
+        }, 700);
+    }
+
+    async function checkSpecial() {
+        const curPos = positions[currentPlayer];
+        let mathRes = null;
+
+        if (ladders[curPos]) {
+            const next = ladders[curPos];
+            mathRes = await askMath(`🪜 เจอ บันไดทองคำ! (ช่อง ${curPos} -> ${next})`, "ปีนขึ้น");
+            if (mathRes) positions[currentPlayer] = next;
+        } else if (snakes[curPos]) {
+            const down = snakes[curPos];
+            mathRes = await askMath(`🐍 ระวัง! เจองูยักษ์! (ช่อง ${curPos} -> ${down})`, "เพื่อหลบงู");
+            if (!mathRes) positions[currentPlayer] = down;
+        }
+        updateTokens();
+    }
+
+    // ฟังก์ชันถามคำถามพร้อมฟังก์ชันนับถอยหลัง 10 วินาที
+    async function askMath(title, reason) {
+        const currentZone = Math.ceil(positions[currentPlayer] / 10);
+        const maxNum = 15 + (currentZone * 4);
+        
+        const n1 = Math.floor(Math.random() * maxNum) + 10;
+        const n2 = Math.floor(Math.random() * maxNum) + 5;
+        const isAdd = Math.random() > 0.5;
+        
+        const qText = isAdd ? `${n1} + ${n2}` : (n1 >= n2 ? `${n1} - ${n2}` : `${n2} - ${n1}`);
+        const ans = isAdd ? n1 + n2 : (n1 >= n2 ? n1 - n2 : n2 - n1);
+
+        let timerInterval;
+        let timeLeft = ANSWER_TIME_LIMIT;
+
+        const { value: userAns, dismiss: dismissReason } = await Swal.fire({
+            title: title,
+            html: `
+                <p><strong>ผู้เล่นที่ ${currentPlayer}</strong> ต้องแก้โจทย์นี้${reason}:</p>
+                <h2 class="text-primary fw-bold my-3">${qText} = ?</h2>
+                <div class="fw-bold text-danger fs-5">เหลือเวลา: <span id="swal-timer-countdown">10</span> วินาที</div>
+                <div class="swal-timer-bar" id="swal-timer-bar"></div>
+            `,
+            input: 'number',
+            inputAttributes: { required: 'true', autofocus: 'true' },
+            allowOutsideClick: false,
+            confirmButtonText: 'ส่งคำตอบ',
+            timer: ANSWER_TIME_LIMIT * 1000, // ตั้งเวลาของ SweetAlert
+            timerProgressBar: false, // ปิดแถบเดิมเพื่อใช้แถบ Custom ที่ควบคุมง่ายกว่า
+            didOpen: () => {
+                const countdownEl = document.getElementById('swal-timer-countdown');
+                const barEl = document.getElementById('swal-timer-bar');
+                
+                // สั่งให้โฟกัสที่ช่อง Input ทันทีเพื่อความรวดเร็วในการพิมพ์
+                const inputEl = Swal.getInput();
+                if (inputEl) inputEl.focus();
+
+                timerInterval = setInterval(() => {
+                    timeLeft = (Swal.getTimerLeft() / 1000).toFixed(1);
+                    if (timeLeft >= 0) {
+                        countdownEl.textContent = Math.ceil(timeLeft);
+                        // อัปเดตความยาวแถบวิดีโอตามเวลาที่เหลืออยู่
+                        const percentage = (Swal.getTimerLeft() / (ANSWER_TIME_LIMIT * 1000)) * 1000;
+                        barEl.style.width = (percentage / 10) + '%';
+                    }
+                }, 100);
+            },
+            willClose: () => {
+                clearInterval(timerInterval);
+            }
+        });
+
+        // ตรวจสอบเงื่อนไขการส่งคำตอบ / หมดเวลา
+        if (dismissReason === Swal.DismissReason.timer) {
+            await Swal.fire({ title: 'หมดเวลาแล้ว! ⏰', text: `คุณตอบไม่ทันเวลา คำตอบที่ถูกคือ ${ans}`, icon: 'error', timer: 2500, showConfirmButton: false });
+            return false;
+        }
+
+        if (parseInt(userAns) === ans) {
+            await Swal.fire({ title: 'ถูกต้องนะคร้าบ! 🎉', icon: 'success', timer: 1200, showConfirmButton: false });
+            return true;
+        } else {
+            await Swal.fire({ title: 'คำตอบไม่ถูกต้อง! 😢', text: `คำตอบที่ถูกต้องคือ ${ans}`, icon: 'error', timer: 2000, showConfirmButton: false });
+            return false;
+        }
+    }
+
+    window.addEventListener('resize', drawLines);
+</script>
+
+</body>
+</html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
