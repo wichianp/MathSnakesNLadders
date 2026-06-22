@@ -57,7 +57,7 @@
         }
         .cell {
             aspect-ratio: 1;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0);
             border-radius: 4px;
             display: flex;
             align-items: center;
@@ -67,7 +67,31 @@
             position: relative;
             color: #2f3542;
         }
-        .cell:nth-child(even) { background: rgba(236, 240, 241, 0.85); }
+        .cell1 { 
+            aspect-ratio: 1;
+            background: rgb(250, 250, 250); 
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            color: #2f3542;
+        }
+        .cell2 {
+            aspect-ratio: 1;
+            background: rgb(187, 237, 250); 
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            color: #2f3542;
+        }
+        /*.cell:nth-child(even) { background: rgba(236, 240, 241, 0.85); }*/
         
         @media (max-width: 576px) {
             .cell { font-size: 0.7rem; }
@@ -257,9 +281,17 @@
             for (let c = 0; c < COLS; c++) {
                 let num = (r % 2 === 0) ? (r * COLS + c + 1) : (r * COLS + (COLS - c));
                 const cell = document.createElement('div');
-                cell.className = 'cell';
+                //cell.className = 'cell';
+                if(num%2 === 0){
+                    cell.className = 'cell1';
+                }else{
+                    cell.className = 'cell2';
+                }
+                //cell.className = 'cell';
                 cell.id = `cell-${num}`;
-                cell.innerHTML = `<span>${num}</span>`;
+                if(num === 1){cell.innerHTML = `<span class="fs-1">🚩</span>`;}else
+                if(num===100){cell.innerHTML = `<span class="fs-1">🏆</span>`;}else
+                {cell.innerHTML = `<span>${num}</span>`;}
                 rowNodes.push(cell);
             }
             rowNodes.forEach(node => grid.appendChild(node));
