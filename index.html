@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -68,33 +68,21 @@
             color: #2f3542;
         }
         .cell1 { 
-            aspect-ratio: 1;
-            background: rgb(250, 250, 250); 
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 0.95rem;
-            position: relative;
-            color: #2f3542;
+            
+            background: rgb(255, 255, 255); 
+            
         }
         .cell2 {
-            aspect-ratio: 1;
-            background: rgb(187, 237, 250); 
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 0.95rem;
-            position: relative;
-            color: #2f3542;
+           
+            background: rgb(201, 200, 200); 
+            
         }
+         .fs-1 {font-size: 48px !important;text-align: center;}
         /*.cell:nth-child(even) { background: rgba(236, 240, 241, 0.85); }*/
         
         @media (max-width: 576px) {
             .cell { font-size: 0.7rem; }
+            .fs-1 {font-size: 22px !important;text-align: center;}
         }
 
         #board-svg {
@@ -281,7 +269,7 @@
             for (let c = 0; c < COLS; c++) {
                 let num = (r % 2 === 0) ? (r * COLS + c + 1) : (r * COLS + (COLS - c));
                 const cell = document.createElement('div');
-                
+                cell.className = 'cell';
                 if(num%2 === 0){
                     cell.className = 'cell1';
                 }else{
